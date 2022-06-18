@@ -9,3 +9,4 @@ pub trait HttpProvider {
 }
 
 pub mod betaseries;
+pub mod opensubtitles;
