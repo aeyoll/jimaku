@@ -26,15 +26,6 @@ fn run_app() -> Result<(), Error> {
         ColorChoice::Auto,
     )?;
 
-    let beta_series_api_key = match env::var("BETA_SERIES_API_KEY") {
-        Ok(beta_series_api_key) => beta_series_api_key,
-        Err(_) => {
-            return Err(anyhow!(
-                "Please set a BETA_SERIES_API_KEY environment variable"
-            ))
-        }
-    };
-
     let args = Args::parse();
     let language = BetaSeriesLang::from_code(&args.language).unwrap();
 
@@ -46,7 +37,7 @@ fn run_app() -> Result<(), Error> {
 
     info!("Searching subtitle for \"{}\"", filename);
 
-    let bs = BetaSeriesProvider::new(beta_series_api_key);
+    let bs = BetaSeriesProvider::new().unwrap();
     let query = filename;
 
     let subtitle = match bs.search_subtitle(query, &language) {

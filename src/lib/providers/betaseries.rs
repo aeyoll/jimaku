@@ -5,6 +5,7 @@ use crate::lib::subtitle::Subtitle;
 use anyhow::{anyhow, Error};
 use querystring;
 use serde::Deserialize;
+use std::env;
 use std::time::Duration;
 use ureq::{Agent, Request};
 
@@ -43,11 +44,20 @@ pub struct BetaSeriesProvider {
 }
 
 impl BetaSeriesProvider {
-    pub fn new(api_key: String) -> Self {
-        BetaSeriesProvider {
+    pub fn new() -> Result<Self, Error> {
+        let api_key = match env::var("BETA_SERIES_API_KEY") {
+            Ok(beta_series_api_key) => beta_series_api_key,
+            Err(_) => {
+                return Err(anyhow!(
+                    "Please set a BETA_SERIES_API_KEY environment variable"
+                ))
+            }
+        };
+
+        Ok(BetaSeriesProvider {
             api_url: String::from("https://api.betaseries.com/"),
             api_key,
-        }
+        })
     }
 
     fn get_agent(&self) -> Agent {
