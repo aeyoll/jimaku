@@ -1,7 +1,8 @@
 mod args;
 mod lib;
 
-use crate::lib::providers::betaseries::BetaSeriesProvider;
+use crate::lib::lang::Lang;
+use crate::lib::providers::betaseries::{BetaSeriesLang, BetaSeriesProvider};
 use crate::lib::providers::HttpProvider;
 use anyhow::{anyhow, Error};
 use args::Args;
@@ -35,7 +36,7 @@ fn run_app() -> Result<(), Error> {
     };
 
     let args = Args::parse();
-    let language = args.language;
+    let language = BetaSeriesLang::from_code(&args.language).unwrap();
 
     let filepath = args.filepath.unwrap();
     let file = File::new(filepath);
@@ -48,7 +49,7 @@ fn run_app() -> Result<(), Error> {
     let bs = BetaSeriesProvider::new(beta_series_api_key);
     let query = filename;
 
-    let subtitle = match bs.search_subtitle(query, language) {
+    let subtitle = match bs.search_subtitle(query, &language) {
         Ok((episode, subtitle)) => {
             info!(
                 "Found subtitle for {}: {} ({})",

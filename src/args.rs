@@ -8,6 +8,6 @@ pub struct Args {
     pub filepath: Option<std::path::PathBuf>,
 
     /// Language
-    #[clap(short, long, default_value_t = String::from("VO"))]
+    #[clap(short, long, default_value_t = String::from("en"))]
     pub language: String,
 }
