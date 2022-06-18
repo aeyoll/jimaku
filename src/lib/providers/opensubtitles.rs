@@ -2,9 +2,29 @@ use crate::lib::episode::Episode;
 use crate::lib::providers::HttpProvider;
 use crate::lib::show::Show;
 use crate::lib::subtitle::Subtitle;
+use crate::Lang;
 use anyhow::Error;
 use std::time::Duration;
 use ureq::{Agent, Request};
+
+const OPEN_SUBTITLES_API_KEY_HEADER: &str = "Api-Key";
+
+#[derive(Clone, Copy)]
+pub struct OpenSubtitlesLang {
+    pub code: &'static str,
+}
+
+impl Lang for OpenSubtitlesLang {
+    type Err = &'static str;
+
+    fn get_lang(&self) -> &'static str {
+        self.code
+    }
+
+    fn from_code(s: &str) -> Result<Self, Self::Err> {
+        Ok(s)
+    }
+}
 
 pub struct OpenSubtitleProvider {
     api_url: String,
@@ -27,18 +47,32 @@ impl OpenSubtitleProvider {
     }
 
     pub fn get(&self, url: String) -> Request {
-        self.get_agent().get(&url).set("Api-Key", &self.api_key)
+        self.get_agent()
+            .get(&url)
+            .set(OPEN_SUBTITLES_API_KEY_HEADER, &self.api_key)
     }
 
     pub fn post(&self, url: String) -> Request {
-        self.get_agent().post(&url).set("Api-Key", &self.api_key)
+        self.get_agent()
+            .post(&url)
+            .set(OPEN_SUBTITLES_API_KEY_HEADER, &self.api_key)
     }
 }
 
 impl HttpProvider for OpenSubtitleProvider {
-    fn search_subtitle(&self, query: String, lang: String) -> Result<(Episode, Subtitle), Error> {
-        let url = format!("{}subtitles", self.api_url);
+    fn search_subtitle<T: Lang>(
+        &self,
+        query: String,
+        lang: &T,
+    ) -> Result<(Episode, Subtitle), Error> {
+        let language = lang.get_lang();
+        let parameters = vec![("languages", language)];
+        let qs = querystring::stringify(parameters);
+
+        let url = format!("{}subtitles?{}", self.api_url, qs);
         let request = self.get(url);
+        let response = request.call()?.into_string()?;
+        println!("{:?}", response);
 
         let episode = Episode {
             id: 0,

@@ -10,7 +10,6 @@ use clap::Parser;
 use lib::file::File;
 use log::LevelFilter;
 use simplelog::{ColorChoice, Config, TermLogger, TerminalMode};
-use std::{env, fs};
 
 #[macro_use]
 extern crate log;
@@ -32,15 +31,9 @@ fn run_app() -> Result<(), Error> {
     let filepath = args.filepath.unwrap();
     let file = File::new(filepath);
 
-    let filename = file.get_filename().to_string_lossy().into_owned();
-    let subtitle_filename = file.get_subtitle_filename().to_string_lossy().into_owned();
+    let bs = BetaSeriesProvider::new(file.clone()).unwrap();
 
-    info!("Searching subtitle for \"{}\"", filename);
-
-    let bs = BetaSeriesProvider::new().unwrap();
-    let query = filename;
-
-    let subtitle = match bs.search_subtitle(query, &language) {
+    let subtitle = match bs.search_subtitle(&language) {
         Ok((episode, subtitle)) => {
             info!(
                 "Found subtitle for {}: {} ({})",
@@ -56,10 +49,7 @@ fn run_app() -> Result<(), Error> {
         Err(_) => return Err(anyhow!("Failed to download the subtitle")),
     };
 
-    match fs::write(subtitle_filename, contents) {
-        Ok(_) => info!("Subtitle successfully saved"),
-        Err(_) => return Err(anyhow!("Unable to write subtitle file")),
-    }
+    file.download(contents)?;
 
     Ok(())
 }

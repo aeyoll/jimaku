@@ -2,6 +2,7 @@ use crate::lib::episode::Episode;
 use crate::lib::lang::Lang;
 use crate::lib::providers::HttpProvider;
 use crate::lib::subtitle::Subtitle;
+use crate::File;
 use anyhow::{anyhow, Error};
 use querystring;
 use serde::Deserialize;
@@ -39,12 +40,13 @@ struct BetaSeriesEpisodeScrapperResponse {
 }
 
 pub struct BetaSeriesProvider {
+    file: File,
     api_url: String,
     api_key: String,
 }
 
 impl BetaSeriesProvider {
-    pub fn new() -> Result<Self, Error> {
+    pub fn new(file: File) -> Result<Self, Error> {
         let api_key = match env::var("BETA_SERIES_API_KEY") {
             Ok(beta_series_api_key) => beta_series_api_key,
             Err(_) => {
@@ -55,6 +57,7 @@ impl BetaSeriesProvider {
         };
 
         Ok(BetaSeriesProvider {
+            file,
             api_url: String::from("https://api.betaseries.com/"),
             api_key,
         })
@@ -81,12 +84,15 @@ impl BetaSeriesProvider {
 }
 
 impl HttpProvider for BetaSeriesProvider {
-    fn search_subtitle<T: Lang>(
-        &self,
-        query: String,
-        lang: &T,
-    ) -> Result<(Episode, Subtitle), Error> {
-        let qs = querystring::stringify(vec![("file", query.as_str())]);
+    fn get_query(&self) -> Result<String, Error> {
+        Ok(self.file.get_filename().to_string_lossy().to_string())
+    }
+
+    fn search_subtitle<T: Lang>(&self, lang: &T) -> Result<(Episode, Subtitle), Error> {
+        let query = self.get_query()?;
+        info!("Searching subtitle for \"{}\"", &query);
+
+        let qs = querystring::stringify(vec![("file", &query)]);
         let url = format!("{}episodes/scraper?{}", self.api_url, qs);
         let request = self.get(url);
 
