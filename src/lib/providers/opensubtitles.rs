@@ -2,41 +2,36 @@ use crate::lib::episode::Episode;
 use crate::lib::providers::HttpProvider;
 use crate::lib::show::Show;
 use crate::lib::subtitle::Subtitle;
-use crate::Lang;
-use anyhow::Error;
+use crate::{File, Lang};
+use anyhow::{anyhow, Error};
+use std::env;
 use std::time::Duration;
 use ureq::{Agent, Request};
 
 const OPEN_SUBTITLES_API_KEY_HEADER: &str = "Api-Key";
 
-#[derive(Clone, Copy)]
-pub struct OpenSubtitlesLang {
-    pub code: &'static str,
-}
-
-impl Lang for OpenSubtitlesLang {
-    type Err = &'static str;
-
-    fn get_lang(&self) -> &'static str {
-        self.code
-    }
-
-    fn from_code(s: &str) -> Result<Self, Self::Err> {
-        Ok(s)
-    }
-}
-
 pub struct OpenSubtitleProvider {
+    file: File,
     api_url: String,
     api_key: String,
 }
 
 impl OpenSubtitleProvider {
-    pub fn new(api_key: String) -> Self {
-        OpenSubtitleProvider {
+    pub fn new(file: File) -> Result<Self, Error> {
+        let api_key = match env::var("OPEN_SUBTITLES_API_KEY") {
+            Ok(beta_series_api_key) => beta_series_api_key,
+            Err(_) => {
+                return Err(anyhow!(
+                    "Please set a OPEN_SUBTITLES_API_KEY environment variable"
+                ))
+            }
+        };
+
+        Ok(OpenSubtitleProvider {
+            file,
             api_url: String::from("https://api.opensubtitles.com/api/v1/"),
             api_key,
-        }
+        })
     }
 
     fn get_agent(&self) -> Agent {
@@ -60,14 +55,22 @@ impl OpenSubtitleProvider {
 }
 
 impl HttpProvider for OpenSubtitleProvider {
-    fn search_subtitle<T: Lang>(
-        &self,
-        query: String,
-        lang: &T,
-    ) -> Result<(Episode, Subtitle), Error> {
-        let language = lang.get_lang();
-        let parameters = vec![("languages", language)];
-        let qs = querystring::stringify(parameters);
+    fn name(&self) -> &str {
+        "OpenSubtitles"
+    }
+
+    fn get_lang(&self, lang: Lang) -> Result<String, Error> {
+        Ok(lang.code)
+    }
+
+    fn get_query(&self) -> Result<String, Error> {
+        let (hash, _) = self.file.get_hash();
+        Ok(hash)
+    }
+
+    fn search_subtitle(&self, lang: Lang) -> Result<(Episode, Subtitle), Error> {
+        let language = self.get_lang(lang)?;
+        let qs = querystring::stringify(vec![("languages", language.as_ref())]);
 
         let url = format!("{}subtitles?{}", self.api_url, qs);
         let request = self.get(url);
@@ -88,7 +91,15 @@ impl HttpProvider for OpenSubtitleProvider {
                 title: "".to_string(),
             },
         };
-        let subtitle: Subtitle = request.call()?.into_json()?;
+        let subtitle = Subtitle {
+            id: 0,
+            language,
+            source: "".to_string(),
+            quality: 0,
+            file: "".to_string(),
+            url: "".to_string(),
+            date: "".to_string(),
+        };
 
         Ok((episode, subtitle))
     }
@@ -103,5 +114,11 @@ impl HttpProvider for OpenSubtitleProvider {
         let _response = request.send_json(data)?;
 
         Ok(String::from("TODO"))
+    }
+
+    fn write_subtitle(&self, contents: String) -> Result<(), Error> {
+        self.file.download(contents)?;
+
+        Ok(())
     }
 }

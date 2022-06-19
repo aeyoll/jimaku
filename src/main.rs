@@ -2,9 +2,10 @@ mod args;
 mod lib;
 
 use crate::lib::lang::Lang;
-use crate::lib::providers::betaseries::{BetaSeriesLang, BetaSeriesProvider};
-use crate::lib::providers::HttpProvider;
-use anyhow::{anyhow, Error};
+use crate::lib::providers::betaseries::BetaSeriesProvider;
+use crate::lib::providers::opensubtitles::OpenSubtitleProvider;
+use crate::lib::providers::Providers;
+use anyhow::Error;
 use args::Args;
 use clap::Parser;
 use lib::file::File;
@@ -26,30 +27,21 @@ fn run_app() -> Result<(), Error> {
     )?;
 
     let args = Args::parse();
-    let language = BetaSeriesLang::from_code(&args.language).unwrap();
+    let language = Lang {
+        code: args.language,
+    };
 
     let filepath = args.filepath.unwrap();
     let file = File::new(filepath);
 
     let bs = BetaSeriesProvider::new(file.clone()).unwrap();
+    let osp = OpenSubtitleProvider::new(file.clone()).unwrap();
 
-    let subtitle = match bs.search_subtitle(&language) {
-        Ok((episode, subtitle)) => {
-            info!(
-                "Found subtitle for {}: {} ({})",
-                episode.show.title, episode.title, episode.code
-            );
-            subtitle
-        }
-        Err(_) => return Err(anyhow!("No subtitle found for this episode")),
-    };
+    let mut providers = Providers::new();
+    providers.push(bs);
+    providers.push(osp);
 
-    let contents = match bs.download_subtitle(subtitle) {
-        Ok(contents) => contents,
-        Err(_) => return Err(anyhow!("Failed to download the subtitle")),
-    };
-
-    file.download(contents)?;
+    providers.run(language).unwrap();
 
     Ok(())
 }

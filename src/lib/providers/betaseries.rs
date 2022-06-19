@@ -12,27 +12,6 @@ use ureq::{Agent, Request};
 
 const BETA_SERIES_API_KEY_HEADER: &str = "X-BetaSeries-Key";
 
-#[derive(Clone, Copy)]
-pub struct BetaSeriesLang {
-    pub code: &'static str,
-}
-
-impl Lang for BetaSeriesLang {
-    type Err = &'static str;
-
-    fn get_lang(&self) -> &'static str {
-        self.code
-    }
-
-    fn from_code(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "en" => Ok(BetaSeriesLang { code: "VO" }),
-            "fr" => Ok(BetaSeriesLang { code: "VF" }),
-            _ => Err("Unknown lang"),
-        }
-    }
-}
-
 #[derive(Deserialize)]
 struct BetaSeriesEpisodeScrapperResponse {
     episode: Episode,
@@ -84,13 +63,25 @@ impl BetaSeriesProvider {
 }
 
 impl HttpProvider for BetaSeriesProvider {
+    fn name(&self) -> &str {
+        "BetaSeries"
+    }
+
+    fn get_lang(&self, lang: Lang) -> Result<String, Error> {
+        match lang.code.as_str() {
+            "en" => Ok(String::from("VO")),
+            "fr" => Ok(String::from("VF")),
+            _ => return Err(anyhow!("Impossible to find language code")),
+        }
+    }
+
     fn get_query(&self) -> Result<String, Error> {
         Ok(self.file.get_filename().to_string_lossy().to_string())
     }
 
-    fn search_subtitle<T: Lang>(&self, lang: &T) -> Result<(Episode, Subtitle), Error> {
+    fn search_subtitle(&self, lang: Lang) -> Result<(Episode, Subtitle), Error> {
         let query = self.get_query()?;
-        info!("Searching subtitle for \"{}\"", &query);
+        info!("Searching subtitle for file \"{}\"", &query);
 
         let qs = querystring::stringify(vec![("file", &query)]);
         let url = format!("{}episodes/scraper?{}", self.api_url, qs);
@@ -100,7 +91,7 @@ impl HttpProvider for BetaSeriesProvider {
         let episode = response.episode;
         let subtitles: Vec<Subtitle> = episode.subtitles.clone();
 
-        let language = lang.get_lang();
+        let language = self.get_lang(lang)?;
 
         let lang_filtered_subtitles: Vec<Subtitle> = subtitles
             .into_iter()
@@ -120,5 +111,11 @@ impl HttpProvider for BetaSeriesProvider {
         let content = request.call()?.into_string()?;
 
         Ok(content)
+    }
+
+    fn write_subtitle(&self, contents: String) -> Result<(), Error> {
+        self.file.download(contents)?;
+
+        Ok(())
     }
 }
