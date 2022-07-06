@@ -15,7 +15,7 @@ fn checksum_64k(file: &mut fs::File, position: io::SeekFrom, buffer: &mut [u8; 6
 
     // Compute the checksum
     for chunk in buffer.chunks(8) {
-        hash = hash.wrapping_add(to_u64(&chunk));
+        hash = hash.wrapping_add(to_u64(chunk));
     }
 
     hash
@@ -24,8 +24,8 @@ fn checksum_64k(file: &mut fs::File, position: io::SeekFrom, buffer: &mut [u8; 6
 fn to_u64(bytes: &[u8]) -> u64 {
     // Convert a slice of bytes to a 64bit unsigned integer, necessary for
     // computing the OpenSubtitles hash.
-    (bytes[0] as u64) << (8 * 0)
-        | (bytes[1] as u64) << (8 * 1)
+    (bytes[0] as u64)
+        | (bytes[1] as u64) << (8)
         | (bytes[2] as u64) << (8 * 2)
         | (bytes[3] as u64) << (8 * 3)
         | (bytes[4] as u64) << (8 * 4)

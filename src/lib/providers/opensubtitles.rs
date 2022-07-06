@@ -4,11 +4,52 @@ use crate::lib::show::Show;
 use crate::lib::subtitle::Subtitle;
 use crate::{File, Lang};
 use anyhow::{anyhow, Error};
+use serde::Deserialize;
 use std::env;
 use std::time::Duration;
 use ureq::{Agent, Request};
 
 const OPEN_SUBTITLES_API_KEY_HEADER: &str = "Api-Key";
+
+#[derive(Debug, Deserialize)]
+struct OpenSubtitleDownloadResponse {
+    pub link: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct OpenSubtitleSubtitleResponseDataAttributeFile {
+    pub file_id: i32,
+}
+
+#[derive(Debug, Deserialize)]
+struct OpenSubtitleSubtitleResponseDataAttributeFeatureDetail {
+    pub feature_id: i32,
+    pub title: String,
+    pub season_number: i32,
+    pub episode_number: i32,
+    pub parent_title: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct OpenSubtitleSubtitleResponseDataAttribute {
+    // pub subtitle_id: String,
+    pub download_count: i32,
+    pub feature_details: OpenSubtitleSubtitleResponseDataAttributeFeatureDetail,
+    pub files: Vec<OpenSubtitleSubtitleResponseDataAttributeFile>,
+    pub upload_date: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct OpenSubtitleSubtitleResponseData {
+    #[serde(rename = "type")]
+    pub data_type: String,
+    pub attributes: OpenSubtitleSubtitleResponseDataAttribute,
+}
+
+#[derive(Debug, Deserialize)]
+struct OpenSubtitleSubtitleResponse {
+    pub data: Vec<OpenSubtitleSubtitleResponseData>,
+}
 
 pub struct OpenSubtitleProvider {
     file: File,
@@ -70,35 +111,60 @@ impl HttpProvider for OpenSubtitleProvider {
 
     fn search_subtitle(&self, lang: Lang) -> Result<(Episode, Subtitle), Error> {
         let language = self.get_lang(lang)?;
-        let qs = querystring::stringify(vec![("languages", language.as_ref())]);
+        let filename = self.file.get_filename().to_string_lossy().to_string();
+        let query = self.get_query()?;
+        let qs = querystring::stringify(vec![
+            ("query", filename.as_ref()),
+            ("languages", language.as_ref()),
+            ("moviehash", query.as_ref()),
+        ]);
 
         let url = format!("{}subtitles?{}", self.api_url, qs);
         let request = self.get(url);
-        let response = request.call()?.into_string()?;
-        println!("{:?}", response);
+        // let response = request.clone().call()?.into_string();
+        // println!("{:?}", response);
+        let response: OpenSubtitleSubtitleResponse = request.call()?.into_json()?;
+
+        if response.data.is_empty() {
+            return Err(anyhow!("Received empty data from OpenSubtitles"));
+        }
+
+        let most_downloaded_subtitle = response
+            .data
+            .iter()
+            .filter(|d| d.data_type == "subtitle")
+            .max_by_key(|d| d.attributes.download_count)
+            .unwrap();
+
+        let attributes = &most_downloaded_subtitle.attributes;
+        let feature_details = &attributes.feature_details;
+        let code = format!(
+            "S{}E{}",
+            feature_details.season_number, feature_details.episode_number
+        );
 
         let episode = Episode {
-            id: 0,
-            title: "".to_string(),
-            season: 0,
-            episode: 0,
-            code: "".to_string(),
+            id: feature_details.feature_id,
+            title: feature_details.title.to_string(),
+            season: feature_details.season_number,
+            episode: feature_details.episode_number,
+            code,
             description: "".to_string(),
             date: "".to_string(),
             subtitles: vec![],
             show: Show {
                 id: 0,
-                title: "".to_string(),
+                title: feature_details.parent_title.to_string(),
             },
         };
         let subtitle = Subtitle {
-            id: 0,
+            id: attributes.files.first().unwrap().file_id,
             language,
             source: "".to_string(),
             quality: 0,
             file: "".to_string(),
             url: "".to_string(),
-            date: "".to_string(),
+            date: attributes.upload_date.to_string(),
         };
 
         Ok((episode, subtitle))
@@ -111,9 +177,20 @@ impl HttpProvider for OpenSubtitleProvider {
         });
 
         let request = self.post(url);
-        let _response = request.send_json(data)?;
+        let link = match request.send_json(data) {
+            Ok(response) => {
+                let response: OpenSubtitleDownloadResponse = response.into_json()?;
+                response.link
+            }
+            Err(e) => {
+                println!("{:?}", e);
+                return Err(anyhow!("KO"));
+            }
+        };
 
-        Ok(String::from("TODO"))
+        let content = self.get(link).call().unwrap().into_string().unwrap();
+
+        Ok(content)
     }
 
     fn write_subtitle(&self, contents: String) -> Result<(), Error> {

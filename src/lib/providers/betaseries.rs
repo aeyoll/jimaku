@@ -15,7 +15,7 @@ const BETA_SERIES_API_KEY_HEADER: &str = "X-BetaSeries-Key";
 #[derive(Deserialize)]
 struct BetaSeriesEpisodeScrapperResponse {
     episode: Episode,
-    errors: Vec<String>,
+    // errors: Vec<String>,
 }
 
 pub struct BetaSeriesProvider {

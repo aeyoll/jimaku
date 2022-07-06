@@ -53,8 +53,8 @@ impl Providers {
                     );
                     subtitle
                 }
-                Err(_) => {
-                    info!("No subtitle found for this episode");
+                Err(e) => {
+                    info!("No subtitle found for this episode ({e})");
                     continue;
                 }
             };

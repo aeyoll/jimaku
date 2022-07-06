@@ -35,7 +35,7 @@ fn run_app() -> Result<(), Error> {
     let file = File::new(filepath);
 
     let bs = BetaSeriesProvider::new(file.clone()).unwrap();
-    let osp = OpenSubtitleProvider::new(file.clone()).unwrap();
+    let osp = OpenSubtitleProvider::new(file).unwrap();
 
     let mut providers = Providers::new();
     providers.push(bs);
