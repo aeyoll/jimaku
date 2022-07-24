@@ -20,6 +20,13 @@ export BETA_SERIES_API_KEY="..."
 export OPEN_SUBTITLES_API_KEY="..."
 ```
 
+Install
+---
+
+```shell
+cargo install jimaku
+```
+
 Usage
 ---
 
