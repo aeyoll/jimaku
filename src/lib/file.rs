@@ -40,3 +40,19 @@ impl File {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_compute_subtitle_filename() {
+        let file = File {
+            filepath: PathBuf::from("~/path/file.mp4"),
+        };
+        assert_eq!(
+            file.get_subtitle_filename().to_string_lossy().into_owned(),
+            "~/path/file.srt"
+        );
+    }
+}
