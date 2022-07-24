@@ -23,9 +23,17 @@ export OPEN_SUBTITLES_API_KEY="..."
 Install
 ---
 
+With cargo:
+
 ```shell
 cargo install jimaku
 ```
+
+Or use the install-script and add `$HOME/.jimaku/bin` to your `$PATH`.
+
+````shell
+curl -fsSL https://raw.githubusercontent.com/aeyoll/jimaku/main/install.sh | bash
+````
 
 Usage
 ---
