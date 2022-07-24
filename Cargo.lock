@@ -184,6 +184,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "112c678d4050afce233f4f2852bb2eb519230b3cf12f33585275537d7e41578d"
 
 [[package]]
+name = "jimaku"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "log",
+ "querystring",
+ "serde",
+ "simplelog",
+ "ureq",
+]
+
+[[package]]
 name = "js-sys"
 version = "0.3.58"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -399,19 +412,6 @@ name = "strsim"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "73473c0e59e6d5812c5dfe2a064a6444949f089e20eec9a2e5506596494e4623"
-
-[[package]]
-name = "sub"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "clap",
- "log",
- "querystring",
- "serde",
- "simplelog",
- "ureq",
-]
 
 [[package]]
 name = "syn"
