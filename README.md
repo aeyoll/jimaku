@@ -10,7 +10,7 @@ A subtitle downloader written in Rust
 Providers
 ---
 
-Sub can search and download subtitles from the following providers:
+_jimaku_ can search and download subtitles from the following providers:
 
 - [betaseries](https://www.betaseries.com/)
 - [opensubtitles](https://www.opensubtitles.org/)
