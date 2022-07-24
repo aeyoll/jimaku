@@ -46,3 +46,8 @@ Usage
 ```shell
 jimaku ~/file/path/file.mp4 --language=fr
 ```
+
+Rust version requirements
+---
+
+Rust >= 1.57.0+
