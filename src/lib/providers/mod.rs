@@ -54,7 +54,7 @@ impl Providers {
                     subtitle
                 }
                 Err(e) => {
-                    info!("No subtitle found for this episode ({e})");
+                    info!("No subtitle found for this episode ({})", e);
                     continue;
                 }
             };
