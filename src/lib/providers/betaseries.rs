@@ -1,4 +1,3 @@
-use crate::lib::episode::Episode;
 use crate::lib::lang::Lang;
 use crate::lib::providers::HttpProvider;
 use crate::lib::subtitle::Subtitle;
@@ -11,6 +10,25 @@ use std::time::Duration;
 use ureq::{Agent, Request};
 
 const BETA_SERIES_API_KEY_HEADER: &str = "X-BetaSeries-Key";
+
+#[derive(Deserialize, Debug)]
+pub struct Show {
+    pub id: i32,
+    pub title: String,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct Episode {
+    pub id: i32,
+    pub title: String,
+    pub season: i32,
+    pub episode: i32,
+    pub code: String,
+    pub description: String,
+    pub date: String,
+    pub subtitles: Vec<Subtitle>,
+    pub show: Show,
+}
 
 #[derive(Deserialize)]
 struct BetaSeriesEpisodeScrapperResponse {
@@ -79,7 +97,7 @@ impl HttpProvider for BetaSeriesProvider {
         Ok(self.file.get_filename().to_string_lossy().to_string())
     }
 
-    fn search_subtitle(&self, lang: Lang) -> Result<(Episode, Subtitle), Error> {
+    fn search_subtitle(&self, lang: Lang) -> Result<Subtitle, Error> {
         let query = self.get_query()?;
         info!("Searching subtitle for file \"{}\"", &query);
 
@@ -88,8 +106,8 @@ impl HttpProvider for BetaSeriesProvider {
         let request = self.get(url);
 
         let response: BetaSeriesEpisodeScrapperResponse = request.call()?.into_json()?;
-        let episode = response.episode;
-        let subtitles: Vec<Subtitle> = episode.subtitles.clone();
+        let episode: Episode = response.episode;
+        let subtitles: Vec<Subtitle> = episode.subtitles;
 
         let language = self.get_lang(lang)?;
 
@@ -103,7 +121,7 @@ impl HttpProvider for BetaSeriesProvider {
             false => lang_filtered_subtitles.first().unwrap().clone(),
         };
 
-        Ok((episode, subtitle))
+        Ok(subtitle)
     }
 
     fn download_subtitle(&self, subtitle: Subtitle) -> Result<String, Error> {

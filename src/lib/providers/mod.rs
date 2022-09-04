@@ -1,4 +1,3 @@
-use crate::lib::episode::Episode;
 use crate::lib::lang::Lang;
 use crate::lib::subtitle::Subtitle;
 use anyhow::Error;
@@ -12,7 +11,7 @@ pub trait HttpProvider {
 
     fn get_query(&self) -> Result<String, Error>;
 
-    fn search_subtitle(&self, lang: Lang) -> Result<(Episode, Subtitle), Error>;
+    fn search_subtitle(&self, lang: Lang) -> Result<Subtitle, Error>;
 
     fn download_subtitle(&self, subtitle: Subtitle) -> Result<String, Error>;
 
@@ -46,11 +45,8 @@ impl Providers {
         for provider in self.providers.iter_mut() {
             info!("Searching using {}", provider);
             let subtitle = match provider.search_subtitle(language.clone()) {
-                Ok((episode, subtitle)) => {
-                    info!(
-                        "Found subtitle for \"{}: {} ({})\"",
-                        episode.show.title, episode.title, episode.code
-                    );
+                Ok(subtitle) => {
+                    info!("Found subtitle for file");
                     subtitle
                 }
                 Err(e) => {

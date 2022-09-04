@@ -1,6 +1,4 @@
-use crate::lib::episode::Episode;
 use crate::lib::providers::HttpProvider;
-use crate::lib::show::Show;
 use crate::lib::subtitle::Subtitle;
 use crate::{File, Lang};
 use anyhow::{anyhow, Error};
@@ -22,19 +20,9 @@ struct OpenSubtitleSubtitleResponseDataAttributeFile {
 }
 
 #[derive(Debug, Deserialize)]
-struct OpenSubtitleSubtitleResponseDataAttributeFeatureDetail {
-    pub feature_id: i32,
-    pub title: String,
-    pub season_number: i32,
-    pub episode_number: i32,
-    pub parent_title: String,
-}
-
-#[derive(Debug, Deserialize)]
 struct OpenSubtitleSubtitleResponseDataAttribute {
-    // pub subtitle_id: String,
     pub download_count: i32,
-    pub feature_details: OpenSubtitleSubtitleResponseDataAttributeFeatureDetail,
+    pub moviehash_match: bool,
     pub files: Vec<OpenSubtitleSubtitleResponseDataAttributeFile>,
     pub upload_date: String,
 }
@@ -109,7 +97,7 @@ impl HttpProvider for OpenSubtitleProvider {
         Ok(hash)
     }
 
-    fn search_subtitle(&self, lang: Lang) -> Result<(Episode, Subtitle), Error> {
+    fn search_subtitle(&self, lang: Lang) -> Result<Subtitle, Error> {
         let language = self.get_lang(lang)?;
         let filename = self.file.get_filename().to_string_lossy().to_string();
         let query = self.get_query()?;
@@ -132,31 +120,12 @@ impl HttpProvider for OpenSubtitleProvider {
         let most_downloaded_subtitle = response
             .data
             .iter()
-            .filter(|d| d.data_type == "subtitle")
+            .filter(|d| d.data_type == "subtitle" && d.attributes.moviehash_match)
             .max_by_key(|d| d.attributes.download_count)
             .unwrap();
 
         let attributes = &most_downloaded_subtitle.attributes;
-        let feature_details = &attributes.feature_details;
-        let code = format!(
-            "S{}E{}",
-            feature_details.season_number, feature_details.episode_number
-        );
 
-        let episode = Episode {
-            id: feature_details.feature_id,
-            title: feature_details.title.to_string(),
-            season: feature_details.season_number,
-            episode: feature_details.episode_number,
-            code,
-            description: "".to_string(),
-            date: "".to_string(),
-            subtitles: vec![],
-            show: Show {
-                id: 0,
-                title: feature_details.parent_title.to_string(),
-            },
-        };
         let subtitle = Subtitle {
             id: attributes.files.first().unwrap().file_id,
             language,
@@ -167,7 +136,7 @@ impl HttpProvider for OpenSubtitleProvider {
             date: attributes.upload_date.to_string(),
         };
 
-        Ok((episode, subtitle))
+        Ok(subtitle)
     }
 
     fn download_subtitle(&self, subtitle: Subtitle) -> Result<String, Error> {

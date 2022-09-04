@@ -1,4 +1,5 @@
 use crate::lib::hash::compute;
+use crate::lib::mode::Mode;
 use crate::Lang;
 use anyhow::{anyhow, Error};
 use std::fs;
@@ -8,11 +9,16 @@ use std::{ffi::OsStr, path::PathBuf};
 pub struct File {
     pub filepath: PathBuf,
     pub lang: Lang,
+    pub mode: Mode,
 }
 
 impl File {
-    pub fn new(filepath: PathBuf, lang: Lang) -> Self {
-        File { filepath, lang }
+    pub fn new(filepath: PathBuf, lang: Lang, mode: Mode) -> Self {
+        File {
+            filepath,
+            lang,
+            mode,
+        }
     }
 
     pub fn get_filename(&self) -> &OsStr {
@@ -54,6 +60,7 @@ mod tests {
             lang: Lang {
                 code: "fr".to_owned(),
             },
+            mode: Mode::TvShow,
         };
         assert_eq!(
             file.get_subtitle_filename().to_string_lossy().into_owned(),
