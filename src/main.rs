@@ -31,7 +31,7 @@ fn run_app() -> Result<(), Error> {
         code: args.language,
     };
 
-    let filepath = args.filepath.unwrap();
+    let filepath = args.filepath;
     let file = File::new(filepath, language.clone());
 
     let bs = BetaSeriesProvider::new(file.clone()).unwrap();
