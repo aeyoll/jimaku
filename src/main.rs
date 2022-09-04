@@ -32,7 +32,7 @@ fn run_app() -> Result<(), Error> {
     };
 
     let filepath = args.filepath.unwrap();
-    let file = File::new(filepath);
+    let file = File::new(filepath, language.clone());
 
     let bs = BetaSeriesProvider::new(file.clone()).unwrap();
     let osp = OpenSubtitleProvider::new(file).unwrap();

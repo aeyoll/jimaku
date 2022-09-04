@@ -1,4 +1,5 @@
 use crate::lib::hash::compute;
+use crate::Lang;
 use anyhow::{anyhow, Error};
 use std::fs;
 use std::{ffi::OsStr, path::PathBuf};
@@ -6,11 +7,12 @@ use std::{ffi::OsStr, path::PathBuf};
 #[derive(Clone)]
 pub struct File {
     pub filepath: PathBuf,
+    pub lang: Lang,
 }
 
 impl File {
-    pub fn new(filepath: PathBuf) -> Self {
-        File { filepath }
+    pub fn new(filepath: PathBuf, lang: Lang) -> Self {
+        File { filepath, lang }
     }
 
     pub fn get_filename(&self) -> &OsStr {
@@ -19,7 +21,7 @@ impl File {
 
     pub fn get_subtitle_filename(&self) -> PathBuf {
         let mut subtitle_filename = self.filepath.clone();
-        subtitle_filename.set_extension("srt");
+        subtitle_filename.set_extension(format!("{}.srt", self.lang.code));
         subtitle_filename.to_path_buf()
     }
 
@@ -49,10 +51,13 @@ mod tests {
     fn it_compute_subtitle_filename() {
         let file = File {
             filepath: PathBuf::from("~/path/file.mp4"),
+            lang: Lang {
+                code: "fr".to_owned(),
+            },
         };
         assert_eq!(
             file.get_subtitle_filename().to_string_lossy().into_owned(),
-            "~/path/file.srt"
+            "~/path/file.fr.srt"
         );
     }
 }
