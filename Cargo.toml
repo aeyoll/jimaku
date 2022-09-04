@@ -1,7 +1,7 @@
 [package]
 name = "jimaku"
 description = "A subtitle downloader"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 license = "MIT"
 
