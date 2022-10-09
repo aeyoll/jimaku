@@ -89,7 +89,7 @@ impl HttpProvider for BetaSeriesProvider {
         match lang.code.as_str() {
             "en" => Ok(String::from("VO")),
             "fr" => Ok(String::from("VF")),
-            _ => return Err(anyhow!("Impossible to find language code")),
+            _ => Err(anyhow!("Impossible to find language code")),
         }
     }
 

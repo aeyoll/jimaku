@@ -44,7 +44,7 @@ impl File {
                 info!("Subtitle successfully saved");
                 Ok(())
             }
-            Err(_) => return Err(anyhow!("Unable to write subtitle file")),
+            Err(_) => Err(anyhow!("Unable to write subtitle file")),
         }
     }
 }
