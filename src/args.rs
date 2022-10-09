@@ -5,7 +5,7 @@ use clap::Parser;
 #[clap(author, version, about, long_about = None)]
 pub struct Args {
     /// Filepath
-    #[clap(parse(from_os_str))]
+    #[clap(value_parser)]
     pub filepath: std::path::PathBuf,
 
     /// Language
