@@ -117,14 +117,28 @@ impl HttpProvider for OpenSubtitleProvider {
             return Err(anyhow!("Received empty data from OpenSubtitles"));
         }
 
-        let most_downloaded_subtitle = response
+        let most_downloaded_subtitle_with_hash = response
             .data
             .iter()
             .filter(|d| d.data_type == "subtitle" && d.attributes.moviehash_match)
-            .max_by_key(|d| d.attributes.download_count)
-            .unwrap();
+            .max_by_key(|d| d.attributes.download_count);
 
-        let attributes = &most_downloaded_subtitle.attributes;
+        let most_downloaded_subtitle_without_hash = response
+            .data
+            .iter()
+            .filter(|d| d.data_type == "subtitle")
+            .max_by_key(|d| d.attributes.download_count);
+
+        let most_downloaded_subtitle = match most_downloaded_subtitle_with_hash {
+            Some(sub) => Some(sub),
+            None => most_downloaded_subtitle_without_hash,
+        };
+
+        if most_downloaded_subtitle.is_none() {
+            return Err(anyhow!("No subtitle found from OpenSubtitles"));
+        }
+
+        let attributes = &most_downloaded_subtitle.unwrap().attributes;
 
         let subtitle = Subtitle {
             id: attributes.files.first().unwrap().file_id,
