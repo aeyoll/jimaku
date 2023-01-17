@@ -1,6 +1,7 @@
-use crate::lib::providers::HttpProvider;
-use crate::lib::subtitle::Subtitle;
-use crate::{File, Lang};
+use crate::utils::file::File;
+use crate::utils::lang::Lang;
+use crate::utils::providers::HttpProvider;
+use crate::utils::subtitle::Subtitle;
 use anyhow::{anyhow, Error};
 use serde::Deserialize;
 use std::env;
