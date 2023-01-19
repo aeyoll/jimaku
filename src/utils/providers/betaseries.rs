@@ -1,7 +1,7 @@
-use crate::lib::lang::Lang;
-use crate::lib::providers::HttpProvider;
-use crate::lib::subtitle::Subtitle;
-use crate::File;
+use crate::utils::file::File;
+use crate::utils::lang::Lang;
+use crate::utils::providers::HttpProvider;
+use crate::utils::subtitle::Subtitle;
 use anyhow::{anyhow, Error};
 use querystring;
 use serde::Deserialize;
@@ -99,7 +99,7 @@ impl HttpProvider for BetaSeriesProvider {
 
     fn search_subtitle(&self, lang: Lang) -> Result<Subtitle, Error> {
         let query = self.get_query()?;
-        info!("Searching subtitle for file \"{}\"", &query);
+        log::info!("Searching subtitle for file \"{}\"", &query);
 
         let qs = querystring::stringify(vec![("file", &query)]);
         let url = format!("{}episodes/scraper?{}", self.api_url, qs);

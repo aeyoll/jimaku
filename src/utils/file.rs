@@ -1,6 +1,6 @@
-use crate::lib::hash::compute;
-use crate::lib::mode::Mode;
-use crate::Lang;
+use crate::utils::hash::compute;
+use crate::utils::lang::Lang;
+use crate::utils::mode::Mode;
 use anyhow::{anyhow, Error};
 use std::fs;
 use std::{ffi::OsStr, path::PathBuf};
@@ -41,7 +41,7 @@ impl File {
 
         match fs::write(subtitle_filename, contents) {
             Ok(_) => {
-                info!("Subtitle successfully saved");
+                log::info!("Subtitle successfully saved");
                 Ok(())
             }
             Err(_) => Err(anyhow!("Unable to write subtitle file")),

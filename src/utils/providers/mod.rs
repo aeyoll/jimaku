@@ -1,5 +1,5 @@
-use crate::lib::lang::Lang;
-use crate::lib::subtitle::Subtitle;
+use crate::utils::lang::Lang;
+use crate::utils::subtitle::Subtitle;
 use anyhow::Error;
 use std::fmt;
 use std::fmt::{Display, Formatter};
@@ -43,25 +43,25 @@ impl Providers {
 
     pub fn run(&mut self, language: Lang) -> Result<(), Error> {
         for provider in self.providers.iter_mut() {
-            info!("Searching using {}", provider);
+            log::info!("Searching using {}", provider);
             let subtitle = match provider.search_subtitle(language.clone()) {
                 Ok(subtitle) => {
-                    info!("Found subtitle for file");
+                    log::info!("Found subtitle for file");
                     subtitle
                 }
                 Err(e) => {
-                    info!("No subtitle found for this episode ({})", e);
+                    log::info!("No subtitle found for this episode ({})", e);
                     continue;
                 }
             };
 
             let contents = match provider.download_subtitle(subtitle) {
                 Ok(contents) => {
-                    info!("Fetched subtitle content");
+                    log::info!("Fetched subtitle content");
                     contents
                 }
                 Err(_) => {
-                    error!("Failed to download the subtitle");
+                    log::error!("Failed to download the subtitle");
                     continue;
                 }
             };
@@ -71,7 +71,7 @@ impl Providers {
                     break;
                 }
                 Err(e) => {
-                    warn!("{}", e.to_string());
+                    log::warn!("{}", e.to_string());
                 }
             };
         }

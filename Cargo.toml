@@ -13,3 +13,11 @@ ureq = { version = "2.4.0", features = ["json"] }
 querystring = "1.1.0"
 log = "0.4.17"
 simplelog = "0.12.0"
+
+[lib]
+name = "jimaku"
+path = "src/lib.rs"
+
+[[bin]]
+name = "jimaku"
+path = "src/main.rs"

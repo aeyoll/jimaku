@@ -1,4 +1,4 @@
-use crate::lib::mode::Mode;
+use crate::utils::mode::Mode;
 use clap::Parser;
 
 #[derive(Parser, Debug)]

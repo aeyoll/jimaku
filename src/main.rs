@@ -1,15 +1,15 @@
 mod args;
-mod lib;
+mod utils;
 
-use crate::lib::lang::Lang;
-use crate::lib::mode::Mode;
-use crate::lib::providers::betaseries::BetaSeriesProvider;
-use crate::lib::providers::opensubtitles::OpenSubtitleProvider;
-use crate::lib::providers::Providers;
+use crate::utils::file::File;
+use crate::utils::lang::Lang;
+use crate::utils::mode::Mode;
+use crate::utils::providers::betaseries::BetaSeriesProvider;
+use crate::utils::providers::opensubtitles::OpenSubtitleProvider;
+use crate::utils::providers::Providers;
 use anyhow::Error;
 use args::Args;
 use clap::Parser;
-use lib::file::File;
 use log::LevelFilter;
 use simplelog::{ColorChoice, Config, TermLogger, TerminalMode};
 use std::path::PathBuf;
