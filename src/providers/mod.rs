@@ -28,6 +28,12 @@ pub struct Providers {
     pub providers: Vec<Box<dyn HttpProvider>>,
 }
 
+impl Default for Providers {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Providers {
     pub fn new() -> Self {
         Self {
