@@ -1,6 +1,6 @@
+use crate::providers::HttpProvider;
 use crate::utils::file::File;
 use crate::utils::lang::Lang;
-use crate::utils::providers::HttpProvider;
 use crate::utils::subtitle::Subtitle;
 use anyhow::{anyhow, Error};
 use querystring;

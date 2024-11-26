@@ -1,5 +1,5 @@
-use crate::utils::mode::Mode;
 use clap::Parser;
+use jimaku::mode::Mode;
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]

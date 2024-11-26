@@ -1,15 +1,15 @@
 mod args;
 mod utils;
 
-use crate::utils::file::File;
-use crate::utils::lang::Lang;
-use crate::utils::mode::Mode;
-use crate::utils::providers::betaseries::BetaSeriesProvider;
-use crate::utils::providers::opensubtitles::OpenSubtitleProvider;
-use crate::utils::providers::Providers;
 use anyhow::Error;
 use args::Args;
 use clap::Parser;
+use jimaku::lang::Lang;
+use jimaku::providers::betaseries::BetaSeriesProvider;
+use jimaku::providers::opensubtitles::OpenSubtitleProvider;
+use jimaku::providers::Providers;
+use jimaku::utils::file::File;
+use jimaku::utils::mode::Mode;
 use log::LevelFilter;
 use simplelog::{ColorChoice, Config, TermLogger, TerminalMode};
 use std::path::PathBuf;
@@ -38,15 +38,16 @@ fn run_app() -> Result<(), Error> {
     let file = File::new(filepath, language.clone(), mode.clone());
 
     let mut providers = Providers::new();
+
     if mode == Mode::TvShow {
-        let bs = BetaSeriesProvider::new(file.clone()).unwrap();
+        let bs = BetaSeriesProvider::new(file.clone())?;
         providers.push(bs);
     }
 
-    let osp = OpenSubtitleProvider::new(file).unwrap();
+    let osp = OpenSubtitleProvider::new(file)?;
     providers.push(osp);
 
-    providers.run(language).unwrap();
+    providers.run(language)?;
 
     Ok(())
 }

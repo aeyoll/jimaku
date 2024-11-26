@@ -1,11 +1,6 @@
-#[derive(clap::ValueEnum, PartialEq, Eq, Debug, Clone)]
+#[derive(clap::ValueEnum, Default, PartialEq, Eq, Debug, Clone)]
 pub enum Mode {
+    #[default]
     Movie,
     TvShow,
-}
-
-impl Default for Mode {
-    fn default() -> Self {
-        Self::TvShow
-    }
 }
