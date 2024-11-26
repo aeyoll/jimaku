@@ -11,7 +11,7 @@ jobs:
   clippy_check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
       - run: rustup component add clippy
       - uses: actions-rs/clippy-check@v1
         with:
@@ -33,12 +33,12 @@ jobs:
     runs-on: ubuntu-latest
     name: check conventional commit compliance
     steps:
-      - uses: actions/checkout@main
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
       - name: Conventional commits check
-        uses: oknozor/cocogitto-action@v2
+        uses: cocogitto/cocogitto-action@v3
 
   build:
     runs-on: ubuntu-latest
