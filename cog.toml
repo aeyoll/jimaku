@@ -1,0 +1,23 @@
+branch_whitelist = ["main"]
+ignore_merge_commits = true
+pre_bump_hooks = [
+    "cargo test",
+    "cargo clippy",
+    "cargo fmt --all",
+    "cargo set-version {{version}}",
+    "cargo build --release",
+]
+post_bump_hooks = [
+    "git push",
+    "git push origin v{{version}}",
+]
+tag_prefix = "v"
+
+[changelog]
+path = "CHANGELOG.md"
+remote = "github.com"
+repository = "jimaku"
+owner = "aeyoll"
+authors = [
+    { signature = "Jean-Philippe Bidegain", username = "aeyoll" },
+]
