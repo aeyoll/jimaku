@@ -1,7 +1,7 @@
 mod args;
 mod utils;
 
-use anyhow::Error;
+use anyhow::{anyhow, Error};
 use args::Args;
 use clap::Parser;
 use jimaku::lang::Lang;
@@ -40,12 +40,31 @@ fn run_app() -> Result<(), Error> {
     let mut providers = Providers::new();
 
     if mode == Mode::TvShow {
-        let bs = BetaSeriesProvider::new(file.clone())?;
-        providers.push(bs);
+        let bs = BetaSeriesProvider::new(file.clone());
+
+        match bs {
+            Ok(bs) => {
+                providers.push(bs);
+            }
+            Err(e) => {
+                log::error!("{}", e.to_string());
+            }
+        };
     }
 
-    let osp = OpenSubtitleProvider::new(file)?;
-    providers.push(osp);
+    match OpenSubtitleProvider::new(file) {
+        Ok(osp) => {
+            providers.push(osp);
+        }
+        Err(e) => {
+            log::error!("{}", e.to_string());
+        }
+    };
+
+    if providers.providers.is_empty() {
+        log::error!("No provider found");
+        return Err(anyhow!("No provider found"));
+    }
 
     providers.run(language)?;
 
