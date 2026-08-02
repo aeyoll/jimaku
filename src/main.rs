@@ -47,7 +47,7 @@ fn run_app() -> Result<(), Error> {
                 providers.push(bs);
             }
             Err(e) => {
-                log::error!("{}", e.to_string());
+                log::warn!("{}", e.to_string());
             }
         };
     }
@@ -57,7 +57,7 @@ fn run_app() -> Result<(), Error> {
             providers.push(osp);
         }
         Err(e) => {
-            log::error!("{}", e.to_string());
+            log::warn!("{}", e.to_string());
         }
     };
 
