@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## v0.2.2 - 2026-08-10
+#### Bug Fixes
+- fixes panic on missing optional provider env vars (#4) - (4fc5d91) - WebBrain, *webbrain-one*
+#### Documentation
+- add links to repository - (a5a839c) - *aeyoll*
+
+- - -
+
 ## v0.2.1 - 2024-11-26
 #### Bug Fixes
 - **(clippy)** add default for Providers struct - (b920593) - *aeyoll*
