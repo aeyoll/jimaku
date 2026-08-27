@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## v0.2.3 - 2026-08-10
+#### Miscellaneous Chores
+- (**clippy**) prevent some warnings - (6495d21) - *aeyoll*
+
+- - -
+
 ## v0.2.2 - 2026-08-10
 #### Bug Fixes
 - fixes panic on missing optional provider env vars (#4) - (4fc5d91) - WebBrain, *webbrain-one*
